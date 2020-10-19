@@ -25,7 +25,7 @@ for(color of ['Green', 'Red', 'Blue', 'Purple', 'Orange', 'Yellow']) { // <-- Ad
 	snailRacers.push( snailFactory(color) );
 }
 // Race
-do {
+while ( winners.length < 3 ) {
 	console.log('========================');
 	snailRacers[pickRandomSnail()].moveVerySlowly();
 	snailRacers.forEach(snail => {
@@ -33,7 +33,7 @@ do {
 		if( snail.finishedRace && winners.includes(snail) === false ) winners.push(snail);
 	});
 	console.log('========================');
-} while ( winners.length < 3 );
+}
 // Print podium
 console.log(`  ${winners[0].snailToken}`);
 console.log(`  []${winners[1].snailToken}`);

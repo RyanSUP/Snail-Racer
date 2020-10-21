@@ -1,3 +1,6 @@
+// What if I push all rounds to an array, then print the array with a setTimeout delay at the end of the program.
+// This will let me know how many time's I need to loop - the current issue with while is it loops forever and overflows.
+// So the race finishes before it is started technically.
 const snailFactory = (color) => {
 	return {
 		color: color,

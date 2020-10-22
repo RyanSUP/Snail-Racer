@@ -34,12 +34,12 @@ const generateRound = () => {
 	});
 	roundArray.push('========================');
 	return roundArray;
-}
+};
 
 // Setup queue trumpets: DAT DADA DA NANA DA NANA NANANA NAAAAAA
 const snailRacers = [];
-let snapshots = [];
-let snapshotPromises = [];
+const snapshots = []; // A 2D array
+const snapshotPromises = [];
 const winners = [];
 
 for(color of ['Green', 'Red', 'Blue', 'Purple', 'Orange', 'Yellow']) { // <-- Add or remove colors to race here
@@ -51,26 +51,28 @@ while ( winners.length < 3 ) {
 	snapshots.push(generateRound());
 }
 
-// delayPrint takes a snapshot and a delay timer. After the timer expires it prints the snapshot returns a resolved promise.
-const delayPrint = (snap, delay) => {
+// After the timer expires it prints the snap and returns a resolved promise.
+const delayPrint = (snap, delayMultiplier) => {
 	return new Promise(resolved => setTimeout(() => {
 		console.log(snap);
 		resolved('');
-	}, delay * 500));
-}
+	}, delayMultiplier * 500));
+};
 
+// Print every snapshot.
 for(let i = 0; i < snapshots.length; i++) {
 	for(snapshot of snapshots[i]) {
-		snapshotPromises.push(delayPrint(snapshot, i)); // FIll an array with the returned promises.
+		snapshotPromises.push(delayPrint(snapshot, i));
 	}
 }
 
-// Promise.all([array of promises]).then(print podium)
-Promise.all(snapshotPromises).then(()=> {
-	console.log(`  ${winners[0].snailToken}`);
-	console.log(`  []${winners[1].snailToken}`);
-	console.log(`${winners[2].snailToken}[][]`);
-});
+// Do stuff after all snapshots have been printed.
+Promise.all(snapshotPromises)
+	.then(()=> {
+		console.log(`  ${winners[0].snailToken}`);
+		console.log(`  []${winners[1].snailToken}`);
+		console.log(`${winners[2].snailToken}[][]`);
+	});
 
 
 

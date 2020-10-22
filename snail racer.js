@@ -1,6 +1,4 @@
-// What if I push all rounds to an array, then print the array with a setTimeout delay at the end of the program.
-// This will let me know how many time's I need to loop - the current issue with while is it loops forever and overflows.
-// So the race finishes before it is started technically.
+// snailFactory returns an object that represents the snail on its own rail.
 const snailFactory = (color) => {
 	return {
 		color: color,
@@ -8,29 +6,26 @@ const snailFactory = (color) => {
 		position: 0,
 		rail: ['@' + color[0],' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','|'],
 		finishedRace: false,
-		moveVerySlowly() { // https://www.youtube.com/watch?v=H6A8pvPL_dQ
-			this.position++;
-			if( this.position < this.rail.length ) { // Don't move the snail if it already crossed the finish
-				this.rail[ (this.position) ] = this.snailToken; // Update snail position in the array
+		moveVerySlowly() { // A method that updates the snails position on the rail. (https://www.youtube.com/watch?v=H6A8pvPL_dQ)
+			if( this.finishedRace === false ) {
+				this.position++;
+				this.rail[ (this.position) ] = this.snailToken;
 				this.rail[this.position - 1] = '~';
-			}
-			if( this.position === this.rail.length - 1) { // Check if snail finished race
-				this.finishedRace = true;
+				if( this.position === this.rail.length - 1) { // The snail finishes the race when it reaches the finish line |
+					this.finishedRace = true;
+				}
 			}
 		}
 	}
 }
-const pickRandomSnail = () => Math.floor( Math.random() * snailRacers.length );
-// Setup queue trumpets: DAT DADA DA NANA DA NANA NANANA NAAAAAA
-const winners = [];
-const snailRacers = [];
-for(color of ['Green', 'Red', 'Blue', 'Purple', 'Orange', 'Yellow']) { // <-- Add or remove colors to race here
-	snailRacers.push( snailFactory(color) );
-}
-const generateRound = () => {
-	snailRacers[pickRandomSnail()].moveVerySlowly();
 
-	// Log new board.
+// Returns a random snail.
+const pickRandomSnail = () => snailRacers[Math.floor( Math.random() * snailRacers.length )];
+
+// generateRound returns an array representing a 'snapshot' of the round.
+// The race is actually completed within a second and later simulated by delaying the print time between each snapshot.
+const generateRound = () => {
+	pickRandomSnail().moveVerySlowly();
 	let roundArray = [];
 	roundArray.push('========================');
 	snailRacers.forEach(snail => {
@@ -40,27 +35,42 @@ const generateRound = () => {
 	roundArray.push('========================');
 	return roundArray;
 }
-// Race
-let race = [];
+
+// Setup queue trumpets: DAT DADA DA NANA DA NANA NANANA NAAAAAA
+const snailRacers = [];
+let snapshots = [];
+let snapshotPromises = [];
+const winners = [];
+
+for(color of ['Green', 'Red', 'Blue', 'Purple', 'Orange', 'Yellow']) { // <-- Add or remove colors to race here
+	snailRacers.push( snailFactory(color) );
+}
+
+// Generate snapshots until there are 3 winners.
 while ( winners.length < 3 ) {
-	race.push(generateRound());
+	snapshots.push(generateRound());
 }
-const delayPrint = (element, delay) => {
-	setTimeout(() => {
-		console.log(element);
-	}, delay * 500);
+
+// delayPrint takes a snapshot and a delay timer. After the timer expires it prints the snapshot returns a resolved promise.
+const delayPrint = (snap, delay) => {
+	return new Promise(resolved => setTimeout(() => {
+		console.log(snap);
+		resolved('');
+	}, delay * 500));
 }
-let roundDelay = 0;
-for(round of race) {
-	roundDelay++;
-	for(element of round) {
-		delayPrint(element, roundDelay);
+
+for(let i = 0; i < snapshots.length; i++) {
+	for(snapshot of snapshots[i]) {
+		snapshotPromises.push(delayPrint(snapshot, i)); // FIll an array with the returned promises.
 	}
 }
 
+// Promise.all([array of promises]).then(print podium)
+Promise.all(snapshotPromises).then(()=> {
+	console.log(`  ${winners[0].snailToken}`);
+	console.log(`  []${winners[1].snailToken}`);
+	console.log(`${winners[2].snailToken}[][]`);
+});
 
 
-// Print podium
-console.log(`  ${winners[0].snailToken}`);
-console.log(`  []${winners[1].snailToken}`);
-console.log(`${winners[2].snailToken}[][]`);
+

@@ -1,3 +1,5 @@
+const prompt = require('prompt-sync')({sigint: true});
+
 // snailFactory returns an object that represents the snail on its own rail.
 const snailFactory = (color) => {
 	return {
@@ -42,37 +44,70 @@ const snapshots = []; // A 2D array
 const snapshotPromises = [];
 const winners = [];
 
-for(color of ['Green', 'Red', 'Blue', 'Purple', 'Orange', 'Yellow']) { // <-- Add or remove colors to race here
+for(color of ['Green', 'Red', 'Blue']) { // <-- Add or remove colors to race here
 	snailRacers.push( snailFactory(color) );
 }
 
-// Generate snapshots until there are 3 winners.
-while ( winners.length < 3 ) {
-	snapshots.push(generateRound());
-}
 
 // After the timer expires it prints the snap and returns a resolved promise.
-const delayPrint = (snap, delayMultiplier) => {
+const delayPrint = (data, delayMultiplier) => {
 	return new Promise(resolved => setTimeout(() => {
-		console.log(snap);
+		console.log(data);
 		resolved('');
 	}, delayMultiplier * 500));
 };
 
-// Print every snapshot.
-for(let i = 0; i < snapshots.length; i++) {
-	for(snapshot of snapshots[i]) {
-		snapshotPromises.push(delayPrint(snapshot, i));
+// Structure of game will be
+// 1) Place bets (eventually take input.)
+// 2) then print race.
+// 3) then determine if you won the bet.
+
+
+const race = async () => {
+	// Generate snapshots until there are 3 winners.
+	while ( winners.length < 3 ) {
+		snapshots.push(generateRound());
 	}
-}
 
-// Do stuff after all snapshots have been printed.
-Promise.all(snapshotPromises)
-	.then(()=> {
-		console.log(`  ${winners[0].snailToken}`);
-		console.log(`  []${winners[1].snailToken}`);
-		console.log(`${winners[2].snailToken}[][]`);
-	});
+	// Print every snapshot. (run the race animation)
+	for(let i = 0; i < snapshots.length; i++) {
+		for(snapshot of snapshots[i]) {
+			snapshotPromises.push(delayPrint(snapshot, i));
+		}
+	}
 
+	Promise.all(snapshotPromises)
+		.then(()=> {
+			printPodium();
+			checkBet();
+		});
 
+};
 
+const printPodium = () => {
+	console.log(`  ${winners[0].snailToken}`);
+	console.log(`  []${winners[1].snailToken}`);
+	console.log(`${winners[2].snailToken}[][]`);
+};
+
+const checkBet = () => {
+	if(winners[0].color === playerBet.snail) {
+		console.log('You won $' + playerBet.bet*10);
+	} else {
+		console.log('You lost!');
+	}
+};
+
+// Make bets
+const placeBet = (snail, bet) => {
+	return {
+		snail: snail,
+		bet: bet
+	}
+};
+
+let mySnail = prompt('Pick a snail ');
+let myBet = prompt('Place a bet $');
+let playerBet = placeBet(mySnail, myBet);
+
+race();

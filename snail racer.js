@@ -6,7 +6,7 @@ const snailFactory = (color) => {
 		color: color,
 		snailToken: '@' + color[0],
 		position: 0,
-		rail: [this.snailToken,' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','|'],
+		rail: ['@' + color[0],' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','|'],
 		finishedRace: false,
 		moveVerySlowly() { // https://www.youtube.com/watch?v=H6A8pvPL_dQ
 			this.position++;
@@ -27,16 +27,39 @@ const snailRacers = [];
 for(color of ['Green', 'Red', 'Blue', 'Purple', 'Orange', 'Yellow']) { // <-- Add or remove colors to race here
 	snailRacers.push( snailFactory(color) );
 }
-// Race
-while ( winners.length < 3 ) {
-	console.log('========================');
+const generateRound = () => {
 	snailRacers[pickRandomSnail()].moveVerySlowly();
+
+	// Log new board.
+	let roundArray = [];
+	roundArray.push('========================');
 	snailRacers.forEach(snail => {
-		console.log( snail.rail.join(' ') );
+		roundArray.push( snail.rail.join(' ') );
 		if( snail.finishedRace && winners.includes(snail) === false ) winners.push(snail);
 	});
-	console.log('========================');
+	roundArray.push('========================');
+	return roundArray;
 }
+// Race
+let race = [];
+while ( winners.length < 3 ) {
+	race.push(generateRound());
+}
+const delayPrint = (element, delay) => {
+	setTimeout(() => {
+		console.log(element);
+	}, delay * 500);
+}
+let roundDelay = 0;
+for(round of race) {
+	roundDelay++;
+	for(element of round) {
+		delayPrint(element, roundDelay);
+	}
+}
+
+
+
 // Print podium
 console.log(`  ${winners[0].snailToken}`);
 console.log(`  []${winners[1].snailToken}`);

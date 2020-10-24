@@ -54,7 +54,7 @@ const delayPrint = (data, delayMultiplier) => {
 	return new Promise(resolved => setTimeout(() => {
 		console.log(data);
 		resolved('Passed');
-	}, delayMultiplier * 0));
+	}, delayMultiplier * 1000));
 };
 
 

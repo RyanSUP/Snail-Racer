@@ -1,4 +1,5 @@
-// snailFactory returns an object that represents the snail on its own rail.
+// Snail =================================================================================================
+// snailFactory returns an object that represents the snail on its own rail
 const snailFactory = (color) => {
 	return {
 		color: color,
@@ -20,15 +21,26 @@ const snailFactory = (color) => {
 }
 
 // Returns a random snail.
-const pickRandomSnail = () => snailRacers[Math.floor( Math.random() * snailRacers.length )];
+const pickRandomSnail = () => snailObjects[Math.floor( Math.random() * snailObjects.length )];
+// End snail ====================================================================================================
 
+
+
+
+
+
+
+
+// Race ==================================================================================================
 // generateRound returns an array representing a 'snapshot' of the round.
 // The race is actually completed within a second and later simulated by delaying the print time between each snapshot.
 const generateRound = () => {
-	pickRandomSnail().moveVerySlowly();
 	let roundArray = [];
+	for(let i = 0; i < 100; i++) {
+		roundArray.push('');
+	}
 	roundArray.push('========================');
-	snailRacers.forEach(snail => {
+	snailObjects.forEach(snail => {
 		roundArray.push( snail.rail.join(' ') );
 		if( snail.finishedRace && winners.includes(snail) === false ) winners.push(snail);
 	});
@@ -36,43 +48,110 @@ const generateRound = () => {
 	return roundArray;
 };
 
-// Setup queue trumpets: DAT DADA DA NANA DA NANA NANANA NAAAAAA
-const snailRacers = [];
-const snapshots = []; // A 2D array
-const snapshotPromises = [];
-const winners = [];
-
-for(color of ['Green', 'Red', 'Blue', 'Purple', 'Orange', 'Yellow']) { // <-- Add or remove colors to race here
-	snailRacers.push( snailFactory(color) );
-}
-
-// Generate snapshots until there are 3 winners.
-while ( winners.length < 3 ) {
-	snapshots.push(generateRound());
-}
 
 // After the timer expires it prints the snap and returns a resolved promise.
-const delayPrint = (snap, delayMultiplier) => {
+const delayPrint = (data, delayMultiplier) => {
 	return new Promise(resolved => setTimeout(() => {
-		console.log(snap);
-		resolved('');
-	}, delayMultiplier * 500));
+		console.log(data);
+		resolved('Passed');
+	}, delayMultiplier * 1000));
 };
 
-// Print every snapshot.
-for(let i = 0; i < snapshots.length; i++) {
-	for(snapshot of snapshots[i]) {
-		snapshotPromises.push(delayPrint(snapshot, i));
+
+const runRaceAnimaiton = async () => {
+	const snapshotPromises = [];
+	const snapshots = []; // A 2D array
+	// Generate snapshots until there are 3 winners.
+	while ( winners.length < 3 ) {
+		snapshots.push(generateRound());
+		pickRandomSnail().moveVerySlowly();
 	}
-}
+	// Print every snapshot. (run the race animation)
+	for(let i = 0; i < snapshots.length; i++) {
+		for(snapshot of snapshots[i]) {
+			snapshotPromises.push(delayPrint(snapshot, i));
+		}
+	}
+	return Promise.all(snapshotPromises);
+};
 
-// Do stuff after all snapshots have been printed.
-Promise.all(snapshotPromises)
-	.then(()=> {
-		console.log(`  ${winners[0].snailToken}`);
-		console.log(`  []${winners[1].snailToken}`);
-		console.log(`${winners[2].snailToken}[][]`);
-	});
+const printPodium = () => {
+	console.log(`  ${winners[0].snailToken}`);
+	console.log(`  []${winners[1].snailToken}`);
+	console.log(`${winners[2].snailToken}[][]`);
+};
+// End race =======================================================================
 
 
 
+let player = {
+	money: 10,
+	bet: {
+		snail: null,
+		amount: null
+	},
+	placeBet() {
+		this.bet.snail = prompt('Pick a snail ');
+		this.bet.amount = prompt('Place a bet $');
+	},
+	logMoney() {
+		console.log(`You have $${this.money}`);
+	},
+	checkBet(winningSnails) {
+		if(winningSnails[0].color === this.bet.snail) {
+			let winnings = this.bet.amount * 2;
+			console.log(`You won $${winnings}!`);
+			this.money += winnings;
+		} else {
+			console.log(`You lost $${player.bet.amount}.`);
+			this.money -= this.bet.amount;
+		}	
+	},
+	hasMoney() {
+		if(player.money > 0) {
+			return true;
+		} else {
+			console.log('You\'re out of money!');
+		}
+	}
+};
+
+
+// Structure of game will be
+// 1) Place bets (eventually take input.)
+// 2) then print race.
+// 3) then determine if you won the bet.
+// Race
+
+// Setup queue trumpets: DAT DADA DA NANA DA NANA NANANA NAAAAAA
+const prompt = require('prompt-sync')({sigint: true});
+const raceColors = ['Green', 'Red', 'Blue']
+let raceNumber = 1;
+let snailObjects = [];
+let winners = [];
+
+const playRound = async () => {
+	for(color of raceColors) { // <-- Add or remove colors to race here
+		snailObjects.push( snailFactory(color) );
+	}
+
+	console.log(`Race ${raceNumber}: ${raceColors.join(' ')}`);
+	player.logMoney();
+	player.placeBet();
+	runRaceAnimaiton()
+		.then(()=> {
+			printPodium();
+			player.checkBet(winners);
+			player.logMoney();
+			raceNumber++;
+			if(player.hasMoney()) {	
+				if(prompt('Bet on the next race? y/n: ') === 'y') {
+					winners = [];
+					snailObjects = [];
+					playRound();
+				}
+			}
+		});
+};
+
+playRound();

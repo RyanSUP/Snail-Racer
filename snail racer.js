@@ -26,8 +26,23 @@ const pickRandomSnail = () => snailObjects[Math.floor( Math.random() * snailObje
 
 
 
-
-
+// 1 easy $25
+// 2 medium $50
+// 3 hard $100
+const selectDifficulty = () => {
+	console.log('1: An afternoon at the track. Goal $20 (EASY)');
+	console.log('2: Enthusiast. Goal $50 (MEDIUM)');
+	console.log('3: You owe some serius cash to some serius people. Goal $100 (HARD)');
+	let choice = prompt('Select a game mode: ');
+	switch (choice) {
+		case 1:
+			return 25;
+		case 2:
+			return 50;
+		case 3:
+			return 100;
+	}
+}
 
 
 
@@ -69,7 +84,7 @@ const runRaceAnimaiton = async () => {
 	// Print every snapshot. (run the race animation)
 	for(let i = 0; i < snapshots.length; i++) {
 		for(snapshot of snapshots[i]) {
-			snapshotPromises.push(delayPrint(snapshot, i));
+			snapshotPromises.push(delayPrint(snapshot, i)); // <- change i to 0 to speed up testing
 		}
 	}
 	return Promise.all(snapshotPromises);
@@ -117,19 +132,6 @@ let player = {
 };
 
 
-// Structure of game will be
-// 1) Place bets (eventually take input.)
-// 2) then print race.
-// 3) then determine if you won the bet.
-// Race
-
-// Setup queue trumpets: DAT DADA DA NANA DA NANA NANANA NAAAAAA
-const prompt = require('prompt-sync')({sigint: true});
-const raceColors = ['Green', 'Red', 'Blue']
-let raceNumber = 1;
-let snailObjects = [];
-let winners = [];
-
 const playRound = async () => {
 	for(color of raceColors) { // <-- Add or remove colors to race here
 		snailObjects.push( snailFactory(color) );
@@ -145,13 +147,32 @@ const playRound = async () => {
 			player.logMoney();
 			raceNumber++;
 			if(player.hasMoney()) {	
-				if(prompt('Bet on the next race? y/n: ') === 'y') {
-					winners = [];
-					snailObjects = [];
-					playRound();
+				if(player.money < amountOfMoneyNeededToWin) {
+					if(prompt('Bet on the next race? y/n: ') === 'y') {
+						winners = [];
+						snailObjects = [];
+						playRound();
+					}
+				} else {
+					console.log('You won!');
 				}
 			}
 		});
 };
+
+// Structure of game will be
+// 1) Place bets (eventually take input.)
+// 2) then print race.
+// 3) then determine if you won the bet.
+// Race
+
+// Setup queue trumpets: DAT DADA DA NANA DA NANA NANANA NAAAAAA
+const prompt = require('prompt-sync')({sigint: true});
+const raceColors = ['Green', 'Red', 'Blue']
+let raceNumber = 1;
+let snailObjects = [];
+let winners = [];
+let amountOfMoneyNeededToWin = selectDifficulty();
+
 
 playRound();

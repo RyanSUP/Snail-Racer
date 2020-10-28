@@ -46,7 +46,7 @@ const runRaceAnimaiton = () => {
 	// Generate snapshots until there are 3 winners.
 	while ( winners.length < 3 ) {
 		snapshots.push(generateRound());
-		SnailSystem.pickRandomSnail().moveVerySlowly();
+		SnailSystem.moveRandomSnail();
 	}
 	// Print every snapshot. (run the race animation)
 	for(let i = 0; i < snapshots.length; i++) {

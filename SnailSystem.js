@@ -22,8 +22,16 @@ let SnailSystem = {
 		}
 	},
 	// Returns a random snail that hasn't finished the race.
-	pickRandomSnail() {
-		return this.snailObjects[Math.floor( Math.random() * this.snailObjects.length )];
+	moveRandomSnail() {
+		let snailsThatHaventFinished = this.snailObjects.filter(snail => {
+			if(snail.finishedRace === false) {
+				return true;
+			}
+		});
+		if (snailsThatHaventFinished.length > 0) {
+			let randomSnail = snailsThatHaventFinished[Math.floor( Math.random() * snailsThatHaventFinished.length )];
+			randomSnail.moveVerySlowly();
+		}
 
 	},
 	generateSnailObjects(colors) {

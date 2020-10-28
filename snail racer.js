@@ -2,7 +2,10 @@ const selectDifficulty = () => {
 	console.log('1: An afternoon at the track. Goal $20 (EASY)');
 	console.log('2: Enthusiast. Goal $50 (MEDIUM)');
 	console.log('3: You owe some serius cash to some serius people. Goal $100 (HARD)');
-	let choice = prompt('Select a game mode: ');
+	let choice;
+	do {
+		choice = prompt('Select a game mode: ');	
+	} while(choice > 3 || choice < 1 || isNaN(choice));
 	switch (choice) {
 		case '1':
 			return 25;
@@ -46,7 +49,7 @@ const runRaceAnimaiton = () => {
 	// Generate snapshots until there are 3 winners.
 	while ( winners.length < 3 ) {
 		snapshots.push(generateRound());
-		SnailSystem.pickRandomSnail().moveVerySlowly();
+		SnailSystem.moveRandomSnail();
 	}
 	// Print every snapshot. (run the race animation)
 	for(let i = 0; i < snapshots.length; i++) {
@@ -70,7 +73,7 @@ const playRound = () => {
 
 	Player.logMoney();
 	console.log(`Race ${raceNumber}/9: ${raceColors.join(' ')}`);
-	Player.placeBet();
+	Player.placeBet(SnailSystem.snailObjects);
 	runRaceAnimaiton()
 		.then(()=> {
 			printPodium();

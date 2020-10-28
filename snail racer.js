@@ -16,82 +16,15 @@ const selectDifficulty = () => {
 	}
 };
 
+const race = () => {
 
-// generateRound returns an array representing a 'snapshot' of the round.
-// The race is actually completed within a second and later simulated by delaying the print time between each snapshot.
-const generateRound = () => {
-	let roundArray = [];
-	for(let i = 0; i < 100; i++) {
-		roundArray.push('');
-	}
-	roundArray.push('========================');
-	SnailSystem.snailObjects.forEach(snail => {
-		roundArray.push( snail.rail.join(' ') );
-		if( snail.finishedRace && winners.includes(snail) === false ) winners.push(snail);
-	});
-	roundArray.push('========================');
-	return roundArray;
-};
-
-
-// After the timer expires it prints the snap and returns a resolved promise.
-const delayPrint = (data, delayMultiplier) => {
-	return new Promise(resolved => setTimeout(() => {
-		console.log(data);
-		resolved('Passed');
-	}, delayMultiplier * 1000));
-};
-
-
-const runRaceAnimaiton = () => {
-	const snapshotPromises = [];
-	const snapshots = []; // A 2D array
-	// Generate snapshots until there are 3 winners.
-	while ( winners.length < 3 ) {
-		snapshots.push(generateRound());
-		SnailSystem.moveRandomSnail();
-	}
-	// Print every snapshot. (run the race animation)
-	for(let i = 0; i < snapshots.length; i++) {
-		for(snapshot of snapshots[i]) {
-			snapshotPromises.push(delayPrint(snapshot, i)); // <- change i to 0 to speed up testing
-		}
-	}
-	return Promise.all(snapshotPromises);
-};
-
-const printPodium = () => {
-	console.log(`  ${winners[0].snailToken}`);
-	console.log(`  []${winners[1].snailToken}`);
-	console.log(`${winners[2].snailToken}[][]`);
-};
-
-
-const playRound = () => {
-
-	SnailSystem.generateSnailObjects(raceColors);
+	console.log(`Race ${raceNumber}/9: `);
+	SnailSystem.generateSnailObjects();
+	SnailSystem.printSnails();
 
 	Player.logMoney();
-	console.log(`Race ${raceNumber}/9: ${raceColors.join(' ')}`);
 	Player.placeBet(SnailSystem.snailObjects);
-	runRaceAnimaiton()
-		.then(()=> {
-			printPodium();
-			Player.checkBetAndCollectWinnings(winners);
-			Player.logMoney();
-			raceNumber++;
-			if(Player.hasMoney() && raceNumber < 10) {	
-				if(Player.money < amountOfMoneyNeededToWin) {
-					if(prompt('Bet on the next race? y/n: ') === 'y') {
-						winners = [];
-						playRound();
-					}
-				} else {
-					Player.logMoney();
-					console.log('You won!');
-				}
-			}
-		});
+	return SnailSystem.runRaceAnimaiton()
 };
 
 // Structure of game will be
@@ -105,8 +38,24 @@ const prompt = require('prompt-sync')({sigint: true});
 const Player = require('./PlayerSystem');
 const SnailSystem = require('./SnailSystem');
 let amountOfMoneyNeededToWin = selectDifficulty();
-const raceColors = ['Green', 'Red', 'Blue'];
-let raceNumber = 1;
-let winners = [];
 
-playRound();
+let raceNumber = 1;
+
+race()
+	.then(()=> {
+		raceNumber++;
+		SnailSystem.printPodium();
+		Player.checkBetAndCollectWinnings(SnailSystem.winners);
+		Player.logMoney();
+		if(Player.hasMoney() && raceNumber < 10) {	
+			if(Player.money < amountOfMoneyNeededToWin) {
+				if(prompt('Bet on the next race? y/n: ') === 'y') {
+					winners = [];
+					race();
+				}
+			} else {
+				Player.logMoney();
+				console.log('You won!');
+			}
+		}
+	});

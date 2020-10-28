@@ -5,19 +5,15 @@ const selectDifficulty = () => {
 	let choice = prompt('Select a game mode: ');
 	switch (choice) {
 		case '1':
-			console.log('returning 25');
 			return 25;
 		case '2':
 			return 50;
 		case '3':
 			return 100;
 	}
-	console.log('left switch');
 };
 
 
-
-// Race ==================================================================================================
 // generateRound returns an array representing a 'snapshot' of the round.
 // The race is actually completed within a second and later simulated by delaying the print time between each snapshot.
 const generateRound = () => {
@@ -55,7 +51,7 @@ const runRaceAnimaiton = () => {
 	// Print every snapshot. (run the race animation)
 	for(let i = 0; i < snapshots.length; i++) {
 		for(snapshot of snapshots[i]) {
-			snapshotPromises.push(delayPrint(snapshot, 0)); // <- change i to 0 to speed up testing
+			snapshotPromises.push(delayPrint(snapshot, i)); // <- change i to 0 to speed up testing
 		}
 	}
 	return Promise.all(snapshotPromises);
@@ -66,10 +62,6 @@ const printPodium = () => {
 	console.log(`  []${winners[1].snailToken}`);
 	console.log(`${winners[2].snailToken}[][]`);
 };
-// End race =======================================================================
-
-
-
 
 
 const playRound = () => {
@@ -77,7 +69,7 @@ const playRound = () => {
 	SnailSystem.generateSnailObjects(raceColors);
 
 	Player.logMoney();
-	console.log(`Race ${raceNumber}: ${raceColors.join(' ')}`);
+	console.log(`Race ${raceNumber}/9: ${raceColors.join(' ')}`);
 	Player.placeBet();
 	runRaceAnimaiton()
 		.then(()=> {
@@ -85,7 +77,7 @@ const playRound = () => {
 			Player.checkBetAndCollectWinnings(winners);
 			Player.logMoney();
 			raceNumber++;
-			if(Player.hasMoney()) {	
+			if(Player.hasMoney() && raceNumber < 10) {	
 				if(Player.money < amountOfMoneyNeededToWin) {
 					if(prompt('Bet on the next race? y/n: ') === 'y') {
 						winners = [];

@@ -21,9 +21,10 @@ let SnailSystem = {
 			}
 		}
 	},
-	// Returns a random snail.
+	// Returns a random snail that hasn't finished the race.
 	pickRandomSnail() {
 		return this.snailObjects[Math.floor( Math.random() * this.snailObjects.length )];
+
 	},
 	generateSnailObjects(colors) {
 		this.snailObjects = [];

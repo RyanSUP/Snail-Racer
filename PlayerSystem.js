@@ -75,7 +75,7 @@ let Player = {
 		do {
 			wager = this.prompt('Wager $');
 
-		} while(wager > this.money);
+		} while(wager > this.money || isNaN(wager));
 		// Select type of wager
 		do {
 			console.log(`Types of bets: ${typesOfBets.join(' ')}`);

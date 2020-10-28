@@ -5,7 +5,7 @@ const selectDifficulty = () => {
 	let choice;
 	do {
 		choice = prompt('Select a game mode: ');	
-	} while(choice > 3 || choice < 1);
+	} while(choice > 3 || choice < 1 || isNaN(choice));
 	switch (choice) {
 		case '1':
 			return 25;

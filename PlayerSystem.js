@@ -1,3 +1,4 @@
+const typesOfBets = ['exacta','trifecta','show','place','win'];
 let Player = {
 	prompt: require('prompt-sync')({sigint: true}),
 	money: 10,
@@ -27,7 +28,7 @@ let Player = {
 				}
 				break;
 			case 'place':
-				if(winningRacers[0].color === this.bet.snail || winningRacers[1].color === this.bet.snail) {
+				if(winningRacers[0].color === this.bet.snail[0] || winningRacers[1].color === this.bet.snail[0]) {
 					cashWon = Math.floor(Math.random() * 2) + 2;
 					this.money += cashWon;
 					console.log(`You won $${cashWon}!`);
@@ -35,7 +36,7 @@ let Player = {
 				}
 				break;
 			case 'win':
-				if(winningRacers[0].color === this.bet.snail) {
+				if(winningRacers[0].color === this.bet.snail[0]) {
 					cashWon = Math.floor(Math.random() * 4) + 2;
 					this.money += cashWon;
 					console.log(`You won $${cashWon}!`);
@@ -66,33 +67,48 @@ let Player = {
 		console.log(`You lost $${this.bet.wager}`);
 		return false;
 	},
-	placeBet() {
-		let snail;
-		let wager = this.prompt('Wager $');
-		console.log('Bet types: win, place, show, trifecta, exacta');
-		let type = this.prompt('Type: ');
-		if(type === 'exacta') {
-			let exactaWager = [];
-			let firstPlaceSnail = this.prompt('First place pick: ');
-			let secondPlaceSnail = this.prompt('Second place pick: ');
-			exactaWager.push(firstPlaceSnail);
-			exactaWager.push(secondPlaceSnail);
-			snail = exactaWager;
-		} else if(type === 'trifecta') {
-			let trifectaWager = [];
-			let firstPlaceSnail = this.prompt('First place pick: ');
-			let secondPlaceSnail = this.prompt('Second place pick: ');
-			let thirdPlaceSnail = this.prompt('Third place pick: ');
-			trifectaWager.push(firstPlaceSnail);
-			trifectaWager.push(secondPlaceSnail);
-			trifectaWager.push(thirdPlaceSnail);
-			snail = trifectaWager;
-		} else {
-			snail = this.prompt('Snail: ');
+	placeBet(snailArray) {
+		let wager = null;
+		let chosenType = null;
+		let chosenSnails = [];
+		// Place wager amount
+		do {
+			wager = this.prompt('Wager $');
+
+		} while(wager > this.money);
+		// Select type of wager
+		do {
+			console.log(`Types of bets: ${typesOfBets.join(' ')}`);
+			chosenType = this.prompt('Type: ');
+
+		} while(typesOfBets.includes(chosenType) === false);
+		// Select snails
+		const getValidSnailInput = (consolePrompt) =>{
+			let invalidInput = true;
+			let playerInput = null;
+			do {
+				playerInput = this.prompt(consolePrompt);
+				snailArray.forEach(snail => {
+					if( snail.color === playerInput && (chosenSnails.includes(playerInput) === false) ) {
+						invalidInput = false;
+					}
+				});
+			} while(invalidInput);
+			return playerInput;
+		}
+		let firstPlaceSnail = getValidSnailInput('First pick: ');
+		chosenSnails.push(firstPlaceSnail);
+		if(chosenType === 'exacta' || chosenType === 'trifecta') {
+			let secondPlaceSnail = getValidSnailInput('Second pick: ');
+			chosenSnails.push(secondPlaceSnail);
+			if(chosenType === 'trifecta') {
+				let thirdPlaceSnail = getValidSnailInput('Third pick: ');
+				chosenSnails.push(thirdPlaceSnail);
+			} 
 		}
 		this.bet = {
-			type: type,
-			snail: snail,
+			type: chosenType,
+			snail: chosenSnails,
 			wager: wager
 		}
 	}
